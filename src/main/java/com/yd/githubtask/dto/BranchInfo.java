@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.List;
 
+/**
+ * Data Access Object to represent BranchInfo.
+ */
 @Data
 @Builder(builderClassName = "Builder", toBuilder = true)
 @JsonDeserialize(builder = BranchInfo.Builder.class)

@@ -7,6 +7,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * External model to represent Commit.
+ */
 @Data
 @Builder(builderClassName = "Builder", toBuilder = true)
 @JsonDeserialize(builder = Commit.Builder.class)

@@ -8,6 +8,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * Data Access Object to represent RepoInfo.
+ */
 @Data
 @Builder(builderClassName = "Builder", toBuilder = true)
 @JsonDeserialize(builder = RepoInfo.Builder.class)

@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+/**
+ * Repo controller.
+ */
 @RestController
 @RequestMapping("/repos")
 public class RepoController {
@@ -22,13 +25,13 @@ public class RepoController {
     /**
      * Get list of github user public repositories.
      *
-     * @param userName   - github username.
-     * @param isFork     - optional flag to return only fork or no-fork repos.
+     * @param userName  github username.
+     * @param isFork    optional flag to return only fork or no-fork repos. If not present, all repos are returned.
      * @return List of {@link RepoInfo}.
      */
     @GetMapping(value = "/users/{userName}", produces = "application/json")
     public Flux<RepoInfo> getRepos(@PathVariable("userName") String userName,
-                                @RequestParam(value = "isFork", required = false) Boolean isFork) {
+                                   @RequestParam(value = "isFork", required = false) Boolean isFork) {
         return repoService.getRepos(userName, isFork);
     }
 }
