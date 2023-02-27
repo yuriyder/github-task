@@ -9,5 +9,4 @@ class GithubTaskApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

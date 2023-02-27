@@ -6,6 +6,7 @@ import com.yd.githubtask.exception.EntityNotFoundException;
 import com.yd.githubtask.external.model.Branch;
 import com.yd.githubtask.external.model.Repo;
 import com.yd.githubtask.service.RepoService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,21 +19,22 @@ import reactor.core.publisher.Mono;
 @Service
 public class RepoServiceImpl implements RepoService {
 
-    private static final String BASE_URL = "https://api.github.com";
-
-    private static final String API_GET_REPOSITORIES = "/users/{userName}/repos";
-
-    private static final String API_GET_BRANCHES = "/repos/{userName}/{repoName}/branches";
-
     private final WebClient webClient;
 
-    public RepoServiceImpl(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl(BASE_URL).build();
+    private final String pathRepos;
+
+    private final String pathBranches;
+
+    public RepoServiceImpl(@Value("${git.base-url}") String baseUrl, @Value("${git.path.repos}") String pathRepos,
+                           @Value("${git.path.branches}") String pathBranches) {
+        this.webClient = WebClient.create(baseUrl);
+        this.pathRepos = pathRepos;
+        this.pathBranches = pathBranches;
     }
 
     @Override
     public Flux<RepoInfo> getRepos(String userName, Boolean isFork) {
-        return webClient.get().uri(API_GET_REPOSITORIES, userName)
+        return webClient.get().uri(pathRepos, userName)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .onRawStatus(code -> code == 404,
@@ -49,7 +51,7 @@ public class RepoServiceImpl implements RepoService {
     }
 
     public Flux<BranchInfo> getBranches(String userName, String repoName) {
-        return webClient.get().uri(API_GET_BRANCHES, userName, repoName)
+        return webClient.get().uri(pathBranches, userName, repoName)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToFlux(Branch.class)

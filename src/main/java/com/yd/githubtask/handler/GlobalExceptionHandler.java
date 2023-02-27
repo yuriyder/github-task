@@ -17,8 +17,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Handle WebClientResponseException.
      *
-     * @param ex      WebClientResponseException
-     * @return        ApiError object
+     * @param ex WebClientResponseException
+     * @return ApiError object
      */
     @ExceptionHandler(WebClientResponseException.class)
     public ResponseEntity<Object> handleWebClientResponseException(WebClientResponseException ex) {
@@ -29,8 +29,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * Handle WebClientResponseException.
      *
-     * @param ex      EntityNotFoundException
-     * @return        ApiError object
+     * @param ex EntityNotFoundException
+     * @return ApiError object
      */
     @ExceptionHandler({EntityNotFoundException.class})
     public ResponseEntity<Object> handleNotFound(EntityNotFoundException ex) {

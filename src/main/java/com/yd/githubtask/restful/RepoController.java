@@ -25,8 +25,8 @@ public class RepoController {
     /**
      * Get list of github user public repositories.
      *
-     * @param userName  github username.
-     * @param isFork    optional flag to return only fork or no-fork repos. If not present, all repos are returned.
+     * @param userName github username.
+     * @param isFork   optional flag to return only fork or no-fork repos. If not present, all repos are returned.
      * @return List of {@link RepoInfo}.
      */
     @GetMapping(value = "/users/{userName}", produces = "application/json")

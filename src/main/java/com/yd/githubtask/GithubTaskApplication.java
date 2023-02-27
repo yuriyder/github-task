@@ -9,12 +9,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class GithubTaskApplication {
 
-	/**
-	 * Starting Point of Application.
-	 *
-	 * @param args - starting arguments
-	 */
-	public static void main(String[] args) {
-		SpringApplication.run(GithubTaskApplication.class, args);
-	}
+    /**
+     * Starting Point of Application.
+     *
+     * @param args - starting arguments
+     */
+    public static void main(String[] args) {
+        SpringApplication.run(GithubTaskApplication.class, args);
+    }
 }

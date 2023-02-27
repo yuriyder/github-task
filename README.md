@@ -2,12 +2,12 @@
 
 This service provides the following endpoint to find all Github user public repositories, which are not forks, including branch names and last commits' sha:
 ```
-GET: /repos/users/{userName}?isFork=true
+GET: /repos/users/{userName}?isFork=false
 ```
 Example request:
 ```
 curl -X 'GET' \
-  'http://localhost:8080/repos/users/testuser?isFork=true' \
+  'http://localhost:8080/repos/users/testuser?isFork=false' \
   -H 'Accept: application/json'
 ```
 Response schema:
