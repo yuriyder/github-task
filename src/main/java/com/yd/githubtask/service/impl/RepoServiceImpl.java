@@ -19,28 +19,35 @@ import reactor.core.publisher.Mono;
 @Service
 public class RepoServiceImpl implements RepoService {
 
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+
     private final WebClient webClient;
 
     private final String pathRepos;
 
     private final String pathBranches;
 
-    public RepoServiceImpl(@Value("${git.base-url}") String baseUrl, @Value("${git.path.repos}") String pathRepos,
+    public RepoServiceImpl(@Value("${git.base-url}") String baseUrl,
+                           @Value("${git.token}") String gitToken,
+                           @Value("${git.path.repos}") String pathRepos,
                            @Value("${git.path.branches}") String pathBranches) {
-        this.webClient = WebClient.create(baseUrl);
+        this.webClient = WebClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader(AUTHORIZATION_HEADER, "Bearer %s".formatted(gitToken))
+                .build();
         this.pathRepos = pathRepos;
         this.pathBranches = pathBranches;
     }
 
     @Override
-    public Flux<RepoInfo> getRepos(String userName, Boolean isFork) {
+    public Flux<RepoInfo> getRepos(String userName, Boolean includeForks) {
         return webClient.get().uri(pathRepos, userName)
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .onRawStatus(code -> code == 404,
-                        response -> Mono.error(new EntityNotFoundException("Github user: %s not found".formatted(userName))))
+                        response -> Mono.error(new EntityNotFoundException("GitHub user: %s not found".formatted(userName))))
                 .bodyToFlux(Repo.class)
-                .filter(x -> isFork == null || isFork.equals(x.getFork()))
+                .filter(x -> Boolean.TRUE.equals(includeForks) || !x.getFork())
                 .flatMap(repo -> getBranches(userName, repo.getName())
                         .collectList()
                         .flatMap(br -> Mono.just(RepoInfo.builder()

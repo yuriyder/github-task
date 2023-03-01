@@ -25,13 +25,13 @@ public class RepoController {
     /**
      * Get list of github user public repositories.
      *
-     * @param userName github username.
-     * @param isFork   optional flag to return only fork or no-fork repos. If not present, all repos are returned.
+     * @param userName       GitHub username.
+     * @param includeForks   optional flag. If 'false' or not present, only no-fork repos are returned. If 'true', all repos are returned.
      * @return List of {@link RepoInfo}.
      */
     @GetMapping(value = "/users/{userName}", produces = "application/json")
     public Flux<RepoInfo> getRepos(@PathVariable("userName") String userName,
-                                   @RequestParam(value = "isFork", required = false) Boolean isFork) {
-        return repoService.getRepos(userName, isFork);
+                                   @RequestParam(value = "includeForks", required = false) Boolean includeForks) {
+        return repoService.getRepos(userName, includeForks);
     }
 }

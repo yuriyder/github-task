@@ -1,10 +1,14 @@
 package com.yd.githubtask.handler;
 
 import com.yd.githubtask.exception.EntityNotFoundException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -22,31 +26,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(WebClientResponseException.class)
     public ResponseEntity<Object> handleWebClientResponseException(WebClientResponseException ex) {
-        logger.warn("Error from WebClient - Status %s, Body %s".formatted(ex.getStatusCode().value(), ex.getResponseBodyAsString()), ex);
-        return prepareResponse("WebClient Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        logger.warn("Error from WebClient - StatusCode: %s, Message: %s".formatted(ex.getStatusCode().value(), ex.getMessage()));
+        if (403 == ex.getStatusCode().value()) {
+            return prepareResponse(("Exception in WebClient. Try updating GitHub Authenticating TOKEN indicated in `git.token` property"
+                    + " in `application.properties` file. %s").formatted(ex.getMessage()), ex.getStatusCode());
+        } else return prepareResponse("Exception in WebClient. %s".formatted(ex.getMessage()), ex.getStatusCode());
     }
 
     /**
-     * Handle WebClientResponseException.
+     * Handle EntityNotFoundException.
      *
      * @param ex EntityNotFoundException
      * @return ApiError object
      */
     @ExceptionHandler({EntityNotFoundException.class})
     public ResponseEntity<Object> handleNotFound(EntityNotFoundException ex) {
-        logger.warn(ex.getMessage(), ex);
+        logger.info(ex.getMessage());
         return prepareResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    //TODO Need to clarify proper way of how to return custom JSON error instead of ProblemDetail object
-//    @Override
-//    protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex, HttpHeaders headers,
-//                                                                      HttpStatusCode statusCode, WebRequest request) {
-//        logger.warn(ex.getMessage(), ex);
-//        return prepareResponse(ex.getMessage(), HttpStatus.NOT_ACCEPTABLE);
-//    }
+    /**
+     * Handle HttpMediaTypeNotAcceptableException.
+     *
+     * @param ex            HttpMediaTypeNotAcceptableException
+     * @param headers       HttpHeaders
+     * @param statusCode    HttpStatusCode
+     * @param request       HttpMediaTypeNotAcceptableException
+     * @return ApiError object
+     */
+    @Override
+    protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException ex, HttpHeaders headers,
+                                                                      HttpStatusCode statusCode, WebRequest request) {
+        return prepareResponse("%s. %s".formatted(ex.getMessage(), ex.getBody().getDetail()), HttpStatus.NOT_ACCEPTABLE);
+    }
 
-    private ResponseEntity<Object> prepareResponse(String message, HttpStatus code) {
+    private ResponseEntity<Object> prepareResponse(String message, HttpStatusCode code) {
         ApiError apiError = new ApiError(code.value(), message);
         return new ResponseEntity<>(apiError, code);
     }

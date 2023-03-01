@@ -12,17 +12,17 @@ public interface RepoService {
     /**
      * Get list of github user public repositories.
      *
-     * @param userName  github username
-     * @param isFork    optional flag to return only fork or no-fork repos. In not present, all repos are returned.
+     * @param userName     GitHub username
+     * @param includeForks optional flag. If 'false' or not present, only no-fork repos are returned. If 'true', all repos are returned.
      * @return Flux of {@link RepoInfo}.
      */
-    Flux<RepoInfo> getRepos(String userName, Boolean isFork);
+    Flux<RepoInfo> getRepos(String userName, Boolean includeForks);
 
     /**
      * Get list of branches of specified repository.
      *
-     * @param userName  github username
-     * @param repoName  repository name
+     * @param userName GitHub username
+     * @param repoName repository name
      * @return Flux of {@link BranchInfo}.
      */
     Flux<BranchInfo> getBranches(String userName, String repoName);

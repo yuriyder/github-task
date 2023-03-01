@@ -34,6 +34,8 @@ class RepoServiceImplTest {
 
     private static final String MOCK_BASE_URL = "http://localhost:%s".formatted(MOCK_WEB_SERVER_PORT);
 
+    private static final String MOCK_TOCKEN = "mock_token";
+
     private static final String PATH_REPOS = "/users/{userName}/repos";
 
     private static final String PATH_BRANCHES = "/repos/{userName}/{repoName}/branches";
@@ -51,7 +53,7 @@ class RepoServiceImplTest {
 
     @BeforeEach
     void initialize() {
-        sut = new RepoServiceImpl(MOCK_BASE_URL, PATH_REPOS, PATH_BRANCHES);
+        sut = new RepoServiceImpl(MOCK_BASE_URL, MOCK_TOCKEN, PATH_REPOS, PATH_BRANCHES);
     }
 
     @AfterAll
@@ -60,9 +62,9 @@ class RepoServiceImplTest {
     }
 
     @Test
-    public void shouldGetAllReposByUsername() {
+    public void shouldGetAllReposByUsernameIncludeForksTrue() {
         final String givenUserName = "testuser";
-        final Boolean givenIsFork = null;
+        final Boolean givenIncludeForks = true;
 
         final String expectedRepoName0 = "repo0";
         final String expectedBranchName0 = "dev";
@@ -70,7 +72,7 @@ class RepoServiceImplTest {
 
         mockWebServer.setDispatcher(prepareDispatcher());
 
-        Flux<RepoInfo> fluxResult = sut.getRepos(givenUserName, givenIsFork);
+        Flux<RepoInfo> fluxResult = sut.getRepos(givenUserName, givenIncludeForks);
         List<RepoInfo> result = fluxResult.collectList().block();
 
         assertThat(result).isNotNull();
@@ -85,9 +87,9 @@ class RepoServiceImplTest {
     }
 
     @Test
-    public void shouldGetNoForkReposByUsername() {
+    public void shouldGetNoForkReposByUsernameIncludeForksFalse() {
         final String givenUserName = "testuser";
-        final Boolean givenIsFork = false;
+        final Boolean givenIncludeForks = false;
 
         final String expectedRepoName1 = "repo1";
         final String expectedBranchName1 = "dev-123";
@@ -95,7 +97,31 @@ class RepoServiceImplTest {
 
         mockWebServer.setDispatcher(prepareDispatcher());
 
-        Flux<RepoInfo> fluxResult = sut.getRepos(givenUserName, givenIsFork);
+        Flux<RepoInfo> fluxResult = sut.getRepos(givenUserName, givenIncludeForks);
+        List<RepoInfo> result = fluxResult.collectList().block();
+
+        assertThat(result).isNotNull();
+        result.sort(Comparator.comparing(RepoInfo::getRepoName));
+        assertThat(result.size()).isEqualTo(2);
+        assertThat(result.get(1).getRepoName()).isEqualTo(expectedRepoName1);
+        assertThat(result.get(1).getUserName()).isEqualTo(givenUserName);
+        assertThat(result.get(1).getBranches().size()).isEqualTo(1);
+        assertThat(result.get(1).getBranches().get(0).getBranchName()).isEqualTo(expectedBranchName1);
+        assertThat(result.get(1).getBranches().get(0).getLastCommitSha()).isEqualTo(expectedCommitSha1);
+    }
+
+    @Test
+    public void shouldGetNoForkReposByUsernameIncludeForksNull() {
+        final String givenUserName = "testuser";
+        final Boolean givenIncludeForks = null;
+
+        final String expectedRepoName1 = "repo1";
+        final String expectedBranchName1 = "dev-123";
+        final String expectedCommitSha1 = "2672c66e32f2760e64edd3f75dd28398ecf9ae48";
+
+        mockWebServer.setDispatcher(prepareDispatcher());
+
+        Flux<RepoInfo> fluxResult = sut.getRepos(givenUserName, givenIncludeForks);
         List<RepoInfo> result = fluxResult.collectList().block();
 
         assertThat(result).isNotNull();
@@ -111,12 +137,12 @@ class RepoServiceImplTest {
     @Test
     public void shouldThrow404IfUserNotFound() {
         final String givenUserName = "nonexistent";
-        final Boolean givenIsFork = false;
-        final String expectedExceptionMessage = "Github user: nonexistent not found";
+        final Boolean givenIncludeForks = false;
+        final String expectedExceptionMessage = "GitHub user: nonexistent not found";
         mockWebServer.setDispatcher(prepareDispatcher());
 
         Exception exception = assertThrows(EntityNotFoundException.class,
-                () -> sut.getRepos(givenUserName, givenIsFork).collectList().block());
+                () -> sut.getRepos(givenUserName, givenIncludeForks).collectList().block());
 
         Assertions.assertThat(exception).hasMessage(expectedExceptionMessage);
     }
